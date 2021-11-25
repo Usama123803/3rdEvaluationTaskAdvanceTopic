@@ -21,7 +21,8 @@ class AuthController extends Controller
     function register(userRequest $request){
         try{
             //Request is valid, create new user
-            $token    = $this->createToken($request->email);
+            // $token    = $this->createToken($request->email);
+            $token = (new JwtAuth)->gettokenencode($request->id);
             $url = 'http://127.0.0.1:8000/api/emailVarification/'.$token.'/'.$request->email;
             $user = User::create([
                 'name' => $request->name,
@@ -60,23 +61,6 @@ class AuthController extends Controller
             return response(['message' => $e->getMessage()]);
         }
     }
-
-    // function createToken($data) {
-    //     try{
-    //         $key = config('constantToken.secret');
-    //         $payload = array(
-    //             "iss" => "http://127.0.0.1:8000",
-    //             "aud" => "http://127.0.0.1:8000/api",
-    //             "iat" => time(),
-    //             "nbf" => 1357000000,
-    //             "data" => $data,
-    //         );
-    //         $jwt = JWT::encode($payload, $key, 'HS256');
-    //         return $jwt;
-    //     } catch(Throwable $e){
-    //         return response(['message' => $e->getMessage()]);
-    //     }
-    // }
 
     function login(userLoginRequest $request) {
         try{
@@ -144,7 +128,7 @@ class AuthController extends Controller
         }
     }
 
-    public function profile(Request $request){
+    function profile(Request $request){
         try{
             //Check User With Token
             $token = $request->bearerToken();
@@ -170,6 +154,32 @@ class AuthController extends Controller
                 ], 400); 
             }
         } catch(Throwable $e){
+            return response(['message' => $e->getMessage()]);
+        }
+    }
+
+    function userUpdate(Request $request, $id)
+    {
+        try {
+            $jwt = $request->bearerToken();
+            $decoded =(new JwtAuth)->gettokendecode($jwt);
+            $userID = $decoded->data;
+
+            $user = User::all()->where('id', $id)->first();
+            if (isset($user)) {
+                $user->update($request->all());
+                return response([
+                    'Status' => '200',
+                    'message' => 'Updated',
+                ], 200);
+            }
+            if ($user == null) {
+                return response([
+                    'Status' => '404',
+                    'message' => 'User not found',
+                ], 404);
+            }
+        }catch(Throwable $e){
             return response(['message' => $e->getMessage()]);
         }
     }

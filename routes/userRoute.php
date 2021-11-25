@@ -21,3 +21,4 @@ Route::get('emailVarification/{token}/{email}',[AuthController::class,'emailVari
 Route::post('login',[AuthController::class,'login']);
 Route::post('logout',[AuthController::class,'logout']);
 Route::get('profile',[AuthController::class,'profile']);
+Route::post('userUpdate/{id}',[AuthController::class,'userUpdate']);
